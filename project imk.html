@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>LINE-BOX Chat Simulator</title>
+    <meta charset="utf-8">
+    <style type="text/css">
+        * {
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 16px;
+            background: linear-gradient(135deg, #2196F3 0%, #0D47A1 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        /* Login Styles */
+        .container {
+            background-color: rgba(255, 255, 255, 0.95);
+            padding: 40px;
+            border-radius: 15px;
+            margin: auto;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .header {
+            text-align: center;
+            color: #0D47A1;
+            margin-bottom: 20px;
+        }
+        
+        .header h2 {
+            margin: 0;
+            font-size: 32px;
+            letter-spacing: 1px;
+        }
+        
+        .subtitle {
+            color: #666;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        
+        input[type=text], input[type=password], select {
+            width: 100%;
+            padding: 15px 20px;
+            margin: 10px 0;
+            display: inline-block;
+            border: 2px solid #ddd;
+            box-sizing: border-box;
+            border-radius: 50px;
+            font-size: 16px;
+            transition: border 0.3s;
+        }
+        
+        input[type=text]:focus, input[type=password]:focus, select:focus {
+            border-color: #2196F3;
+            outline: none;
+        }
+        
+        button {
+            color: white;
+            border: none;
+            padding: 16px 12px;
+            width: 100%;
+            margin-top: 20px;
+            background: linear-gradient(to right, #1565C0, #2196F3);
+            cursor: pointer;
+            border-radius: 50px;
+            font-size: 18px;
+            font-weight: bold;
+            letter-spacing: 1px;
+            transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(33, 150, 243, 0.4);
+        }
+        
+        button:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+            box-shadow: 0 7px 20px rgba(33, 150, 243, 0.5);
+        }
+        
+        .adalahpokoknya {
+            float: right;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+        
+        hr {
+            border: none;
+            height: 2px;
+            background: linear-gradient(to right, transparent, #2196F3, transparent);
+            margin: 25px 0;
+        }
+        
+        /* Chat Styles (awalnya tersembunyi) */
+        .chat-container {
+            display: none;
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            width: 95%;
+            max-width: 900px;
+            height: 85vh;
+            margin: auto;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            flex-direction: column;
+        }
+        
+        .chat-header {
+            background: linear-gradient(to right, #0D47A1, #1565C0);
+            color: white;
+            padding: 15px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .chat-header h2 {
+            margin: 0;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .current-user {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 8px 15px;
+            border-radius: 50px;
+            font-weight: bold;
+        }
+        
+        .chat-body {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: #f9f9f9;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .message {
+            margin-bottom: 15px;
+            max-width: 70%;
+            padding: 12px 18px;
+            border-radius: 20px;
+            position: relative;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .message.sent {
+            align-self: flex-end;
+            background: linear-gradient(to right, #2196F3, #0D47A1);
+            color: white;
+            border-top-right-radius: 5px;
+        }
+        
+        .message.received {
+            align-self: flex-start;
+            background: white;
+            color: #333;
+            border: 1px solid #e0e0e0;
+            border-top-left-radius: 5px;
+        }
+        
+        .message-sender {
+            font-weight: bold;
+            font-size: 12px;
+            margin-bottom: 5px;
+        }
+        
+        .message.sent .message-sender {
+            color: rgba(255, 255, 255, 0.9);
+            text-align: right;
+        }
+        
+        .message.received .message-sender {
+            color: #666;
+        }
+        
+        .message-text {
+            word-wrap: break-word;
+            line-height: 1.5;
+        }
+        
+        .message-time {
+            font-size: 11px;
+            opacity: 0.7;
+            text-align: right;
+            margin-top: 5px;
+        }
+        
+        .chat-footer {
+            padding: 15px 20px;
+            background: white;
+            border-top: 1px solid #e0e0e0;
+            display: flex;
+        }
+        
+        .message-input {
+            flex: 1;
+            padding: 15px 20px;
+            border: 2px solid #ddd;
+            border-radius: 50px;
+            font-size: 16px;
+            margin-right: 10px;
+            transition: border 0.3s;
+        }
+        
+        .message-input:focus {
+            border-color: #2196F3;
+            outline: none;
+        }
+        
+        .send-btn {
+            width: 120px;
+            margin: 0;
+            border-radius: 50px;
+            background: linear-gradient(to right, #1565C0, #2196F3);
+        }
+        
+        .user-list {
+            position: absolute;
+            right: 20px;
+            top: 80px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            padding: 15px;
+            width: 200px;
+            display: none;
+        }
+        
+        .user-list h4 {
+            margin-top: 0;
+            color: #0D47A1;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+        
+        .user-item {
+            padding: 8px 12px;
+            margin: 5px 0;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .user-status {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+        
+        .user-status.online {
+            background: #4CAF50;
+        }
+        
+        .user-status.offline {
+            background: #ccc;
+        }
+        
+        .chat-controls {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .control-btn {
+            background: #f0f0f0;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        
+        .control-btn:hover {
+            background: #e0e0e0;
+            transform: scale(1.05);
+        }
+        
+        .logout-btn {
+            background: #ff5252;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 5px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .logout-btn:hover {
+            background: #ff0000;
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #4CAF50;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            display: none;
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        .emoji-btn {
+            background: #FFC107;
+            color: white;
+            font-size: 20px;
+        }
+        
+        .info-text {
+            text-align: center;
+            color: #666;
+            font-style: italic;
+            margin-top: 20px;
+            padding: 10px;
+            background: #f5f5f5;
+            border-radius: 10px;
+            font-size: 14px;
+        }
+        
+        .system-message {
+            align-self: center;
+            background: #e3f2fd;
+            color: #1565C0;
+            border-radius: 10px;
+            padding: 8px 15px;
+            margin: 10px 0;
+            font-size: 14px;
+            max-width: 80%;
+            text-align: center;
+        }
+        
+        @media (max-width: 768px) {
+            .container, .chat-container {
+                width: 100%;
+                padding: 20px;
+            }
+            
+            .chat-container {
+                height: 90vh;
+            }
+            
+            .message {
+                max-width: 85%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Login Form -->
+    <div class="container" id="loginContainer">
+        <span class="header"><h2>LINE-BOX</h2></span>
+        <div class="subtitle">Chat Simulator - Login dengan user yang tersedia</div>
+        <hr>
+        
+        <span><b>Pilih User :</b></span>
+        <select id="usernameSelect">
+            <option value="">-- Pilih User --</option>
+            <option value="syahlan">Syahlan</option>
+            <option value="sifani">Sifani</option>
+            <option value="ismi">Ismi</option>
+            <option value="sulis">Sulis</option>
+            <option value="other">User Lain...</option>
+        </select>
+        
+        <div id="customUserContainer" style="display: none;">
+            <span><b>Nama User Baru:</b></span>
+            <input type="text" id="customUsername" placeholder="Masukkan nama user baru">
+        </div>
+        
+        <span><b>Password :</b></span>
+        <input type="password" id="password" placeholder="Password (opsional)" value="linebox123">
+        
+        <button id="loginBtn">MASUK KE CHAT</button>
+        
+        <hr>
+        <span class="adalahpokoknya">Lupa <i>password</i>, klik <a href="#" onclick="alert('Password default: linebox123\nAtau kosongkan saja')">disini</a></span>
+    </div>
+    
+    <!-- Chat Interface -->
+    <div class="chat-container" id="chatContainer">
+        <div class="chat-header">
+            <h2>LINE-BOX Chat Room</h2>
+            <div>
+                <span class="current-user" id="currentUserDisplay">Anda masuk sebagai: ...</span>
+                <button class="logout-btn" id="logoutBtn">Keluar</button>
+            </div>
+        </div>
+        
+        <div class="chat-body" id="chatBody">
+            <!-- Pesan akan dimuat di sini -->
+            <div class="info-text" id="initialInfo">
+                💬 Selamat datang di LINE-BOX!<br>
+                Chat ini menggunakan localStorage untuk menyimpan percakapan.<br>
+                Untuk simulasi percakapan dengan user berbeda, buka tab browser baru.
+            </div>
+        </div>
+        
+        <div class="chat-footer">
+            <input type="text" class="message-input" id="messageInput" placeholder="Ketik pesan Anda...">
+            <div class="chat-controls">
+                <button class="control-btn emoji-btn" id="emojiBtn" title="Emoji">😀</button>
+                <button class="control-btn" id="userListBtn" title="Daftar User">👥</button>
+                <button class="control-btn" id="clearChatBtn" title="Hapus Chat">🗑️</button>
+            </div>
+            <button class="send-btn" id="sendBtn">Kirim</button>
+        </div>
+        
+        <div class="user-list" id="userList">
+            <h4>Daftar User</h4>
+            <div id="userListContent">
+                <!-- Daftar user akan diisi oleh JavaScript -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- Notification -->
+    <div class="notification" id="notification"></div>
+    
+    <script>
+        // Daftar user default
+        const defaultUsers = ['syahlan', 'sifani', 'ismi', 'sulis'];
+        let currentUser = '';
+        let allUsers = new Set(defaultUsers); // Set untuk menyimpan semua user yang pernah chat
+        let activeUsers = new Set(); // User yang sedang aktif (hanya yang login di browser ini)
+        
+        // DOM Elements
+        const loginContainer = document.getElementById('loginContainer');
+        const chatContainer = document.getElementById('chatContainer');
+        const usernameSelect = document.getElementById('usernameSelect');
+        const customUserContainer = document.getElementById('customUserContainer');
+        const customUsername = document.getElementById('customUsername');
+        const passwordInput = document.getElementById('password');
+        const loginBtn = document.getElementById('loginBtn');
+        const currentUserDisplay = document.getElementById('currentUserDisplay');
+        const chatBody = document.getElementById('chatBody');
+        const messageInput = document.getElementById('messageInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const userList = document.getElementById('userList');
+        const userListBtn = document.getElementById('userListBtn');
+        const clearChatBtn = document.getElementById('clearChatBtn');
+        const emojiBtn = document.getElementById('emojiBtn');
+        const notification = document.getElementById('notification');
+        const initialInfo = document.getElementById('initialInfo');
+        const userListContent = document.getElementById('userListContent');
+        
+        // Emoji list
+        const emojis = ['😀', '😂', '😍', '😎', '😊', '🤔', '👍', '👏', '🎉', '❤️', '🔥', '💯'];
+        
+        // Event listener untuk select user
+        usernameSelect.addEventListener('change', function() {
+            if (this.value === 'other') {
+                customUserContainer.style.display = 'block';
+            } else {
+                customUserContainer.style.display = 'none';
+            }
+        });
+        
+        // Inisialisasi chat dari localStorage atau buat baru
+        function initializeChat() {
+            if (!localStorage.getItem('lineboxChat')) {
+                const initialMessages = [
+                    {
+                        sender: 'Sistem',
+                        text: 'Selamat datang di LINE-BOX! Pilih user dan mulai percakapan.',
+                        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                        date: new Date().toLocaleDateString(),
+                        type: 'system'
+                    }
+                ];
+                localStorage.setItem('lineboxChat', JSON.stringify(initialMessages));
+            }
+            
+            // Muat daftar user dari history chat
+            updateUserListFromHistory();
+        }
+        
+        // Update daftar user dari history chat
+        function updateUserListFromHistory() {
+            const messages = JSON.parse(localStorage.getItem('lineboxChat')) || [];
+            const usersFromHistory = new Set();
+            
+            messages.forEach(message => {
+                if (message.sender && message.sender !== 'Sistem') {
+                    usersFromHistory.add(message.sender);
+                }
+            });
+            
+            // Gabungkan dengan default users
+            usersFromHistory.forEach(user => allUsers.add(user));
+            
+            // Update tampilan daftar user
+            updateUserListDisplay();
+        }
+        
+        // Update tampilan daftar user
+        function updateUserListDisplay() {
+            userListContent.innerHTML = '';
+            
+            // Tambahkan semua user yang pernah chat
+            allUsers.forEach(user => {
+                const userDiv = document.createElement('div');
+                userDiv.className = 'user-item';
+                
+                // Cek apakah user ini sedang aktif (login di browser ini)
+                const isActive = activeUsers.has(user);
+                const isCurrent = user === currentUser;
+                
+                userDiv.innerHTML = `
+                    <span>${user} ${isCurrent ? '(Anda)' : ''}</span>
+                    <span class="user-status ${isActive ? 'online' : 'offline'}"></span>
+                `;
+                
+                userListContent.appendChild(userDiv);
+            });
+            
+            // Tambahkan info
+            const infoDiv = document.createElement('div');
+            infoDiv.className = 'info-text';
+            infoDiv.style.fontSize = '12px';
+            infoDiv.style.marginTop = '10px';
+            infoDiv.textContent = `Total user: ${allUsers.size}`;
+            userListContent.appendChild(infoDiv);
+        }
+        
+        // Muat pesan dari localStorage
+        function loadMessages() {
+            const messages = JSON.parse(localStorage.getItem('lineboxChat')) || [];
+            chatBody.innerHTML = '';
+            
+            // Tampilkan info hanya jika tidak ada pesan selain sistem
+            const userMessages = messages.filter(m => m.sender !== 'Sistem');
+            if (userMessages.length === 0) {
+                initialInfo.style.display = 'block';
+            } else {
+                initialInfo.style.display = 'none';
+            }
+            
+            messages.forEach(message => {
+                if (message.type === 'system') {
+                    // Pesan sistem
+                    const systemDiv = document.createElement('div');
+                    systemDiv.className = 'system-message';
+                    systemDiv.textContent = message.text;
+                    chatBody.appendChild(systemDiv);
+                } else {
+                    // Pesan biasa
+                    addMessageToUI(message.sender, message.text, message.time, message.date);
+                }
+            });
+            
+            // Scroll ke bawah
+            chatBody.scrollTop = chatBody.scrollHeight;
+        }
+        
+        // Tambah pesan ke UI
+        function addMessageToUI(sender, text, time, date) {
+            const messageDiv = document.createElement('div');
+            const isCurrentUser = sender === currentUser;
+            
+            messageDiv.classList.add('message');
+            messageDiv.classList.add(isCurrentUser ? 'sent' : 'received');
+            
+            // Format waktu
+            const now = new Date();
+            const messageDate = date || now.toLocaleDateString();
+            const today = now.toLocaleDateString();
+            const displayDate = messageDate === today ? 'Hari ini' : messageDate;
+            
+            messageDiv.innerHTML = `
+                <div class="message-sender">${sender}</div>
+                <div class="message-text">${text}</div>
+                <div class="message-time">${displayDate} ${time}</div>
+            `;
+            
+            chatBody.appendChild(messageDiv);
+            
+            // Sembunyikan info awal jika ada pesan
+            initialInfo.style.display = 'none';
+        }
+        
+        // Simpan pesan ke localStorage
+        function saveMessage(sender, text, type = 'normal') {
+            const messages = JSON.parse(localStorage.getItem('lineboxChat')) || [];
+            const now = new Date();
+            
+            const newMessage = {
+                sender: sender,
+                text: text,
+                time: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                date: now.toLocaleDateString(),
+                timestamp: now.getTime(),
+                type: type
+            };
+            
+            messages.push(newMessage);
+            localStorage.setItem('lineboxChat', JSON.stringify(messages));
+            
+            // Tambahkan user ke daftar jika belum ada
+            if (sender !== 'Sistem') {
+                allUsers.add(sender);
+                updateUserListDisplay();
+            }
+            
+            return newMessage;
+        }
+        
+        // Tampilkan notifikasi
+        function showNotification(text, type = 'info') {
+            notification.textContent = text;
+            notification.style.background = type === 'success' ? '#4CAF50' : 
+                                           type === 'error' ? '#f44336' : '#2196F3';
+            notification.style.display = 'block';
+            
+            setTimeout(() => {
+                notification.style.display = 'none';
+            }, 3000);
+        }
+        
+        // Kirim pesan
+        function sendMessage() {
+            const text = messageInput.value.trim();
+            if (!text) return;
+            
+            const newMessage = saveMessage(currentUser, text);
+            addMessageToUI(currentUser, text, newMessage.time, newMessage.date);
+            
+            // Clear input dan fokus kembali
+            messageInput.value = '';
+            messageInput.focus();
+            
+            // Scroll ke bawah
+            chatBody.scrollTop = chatBody.scrollHeight;
+            
+            // Simpan aktivitas user
+            saveUserActivity(currentUser);
+        }
+        
+        // Simpan aktivitas user (untuk status "aktif")
+        function saveUserActivity(username) {
+            if (!activeUsers.has(username)) {
+                activeUsers.add(username);
+                updateUserListDisplay();
+            }
+            
+            // Simpan timestamp aktivitas terakhir
+            const userActivities = JSON.parse(localStorage.getItem('lineboxUserActivities')) || {};
+            userActivities[username] = new Date().getTime();
+            localStorage.setItem('lineboxUserActivities', JSON.stringify(userActivities));
+        }
+        
+        // Hapus user yang sudah lama tidak aktif (lebih dari 5 menit)
+        function cleanupInactiveUsers() {
+            const userActivities = JSON.parse(localStorage.getItem('lineboxUserActivities')) || {};
+            const now = new Date().getTime();
+            const fiveMinutes = 5 * 60 * 1000;
+            
+            activeUsers.clear();
+            
+            for (const [user, lastActive] of Object.entries(userActivities)) {
+                if (now - lastActive < fiveMinutes) {
+                    activeUsers.add(user);
+                }
+            }
+            
+            updateUserListDisplay();
+        }
+        
+        // Event Listeners
+        loginBtn.addEventListener('click', function() {
+            let selectedUser = usernameSelect.value;
+            
+            // Jika memilih "User Lain..."
+            if (selectedUser === 'other') {
+                selectedUser = customUsername.value.trim();
+                if (!selectedUser) {
+                    alert('Masukkan nama user baru!');
+                    return;
+                }
+            }
+            
+            if (!selectedUser) {
+                alert('Pilih atau masukkan nama user terlebih dahulu!');
+                return;
+            }
+            
+            const password = passwordInput.value;
+            
+            // Password sederhana (hanya untuk demo)
+            if (password !== 'linebox123' && password !== '') {
+                alert('Password salah! Coba: linebox123 atau kosongkan');
+                return;
+            }
+            
+            currentUser = selectedUser;
+            
+            // Inisialisasi chat
+            initializeChat();
+            
+            // Tampilkan chat dan sembunyikan login
+            loginContainer.style.display = 'none';
+            chatContainer.style.display = 'flex';
+            currentUserDisplay.textContent = `Anda masuk sebagai: ${currentUser}`;
+            
+            // Tambahkan user ke daftar aktif
+            saveUserActivity(currentUser);
+            
+            // Muat pesan
+            loadMessages();
+            
+            // Fokus ke input pesan
+            messageInput.focus();
+            
+            // Tampilkan notifikasi
+            showNotification(`Berhasil login sebagai ${currentUser}`, 'success');
+            
+            // Tambahkan pesan sistem jika user baru
+            if (!defaultUsers.includes(currentUser) && !isReturningUser(currentUser)) {
+                setTimeout(() => {
+                    saveMessage('Sistem', `${currentUser} telah bergabung ke chat`, 'system');
+                    loadMessages();
+                }, 500);
+            }
+        });
+        
+        // Cek apakah user sudah pernah chat sebelumnya
+        function isReturningUser(username) {
+            const messages = JSON.parse(localStorage.getItem('lineboxChat')) || [];
+            return messages.some(m => m.sender === username);
+        }
+        
+        // Enter untuk mengirim pesan
+        messageInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+        
+        sendBtn.addEventListener('click', sendMessage);
+        
+        // Logout
+        logoutBtn.addEventListener('click', function() {
+            if (confirm('Yakin ingin keluar dari chat?')) {
+                // Hapus user dari daftar aktif
+                activeUsers.delete(currentUser);
+                updateUserListDisplay();
+                
+                chatContainer.style.display = 'none';
+                loginContainer.style.display = 'block';
+                currentUser = '';
+                usernameSelect.value = '';
+                customUsername.value = '';
+                customUserContainer.style.display = 'none';
+                passwordInput.value = 'linebox123';
+                
+                showNotification('Anda telah logout', 'info');
+            }
+        });
+        
+        // Toggle user list
+        userListBtn.addEventListener('click', function() {
+            cleanupInactiveUsers(); // Bersihkan user tidak aktif sebelum menampilkan
+            userList.style.display = userList.style.display === 'block' ? 'none' : 'block';
+        });
+        
+        // Hapus chat
+        clearChatBtn.addEventListener('click', function() {
+            if (confirm('Hapus semua pesan? Chat akan kembali ke kondisi awal.')) {
+                // Simpan user yang sedang login
+                const currentUserBackup = currentUser;
+                
+                // Hapus semua data chat
+                localStorage.removeItem('lineboxChat');
+                localStorage.removeItem('lineboxUserActivities');
+                
+                // Reset active users
+                activeUsers.clear();
+                if (currentUserBackup) {
+                    activeUsers.add(currentUserBackup);
+                }
+                
+                // Inisialisasi ulang
+                initializeChat();
+                loadMessages();
+                showNotification('Chat berhasil dihapus', 'success');
+            }
+        });
+        
+        // Emoji picker sederhana
+        emojiBtn.addEventListener('click', function() {
+            const emojiPicker = document.createElement('div');
+            emojiPicker.style.cssText = `
+                position: absolute;
+                bottom: 80px;
+                right: 100px;
+                background: white;
+                border-radius: 10px;
+                box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+                padding: 10px;
+                display: grid;
+                grid-template-columns: repeat(4, 1fr);
+                gap: 5px;
+                z-index: 100;
+            `;
+            
+            emojis.forEach(emoji => {
+                const emojiSpan = document.createElement('span');
+                emojiSpan.textContent = emoji;
+                emojiSpan.style.cssText = `
+                    font-size: 20px;
+                    cursor: pointer;
+                    padding: 5px;
+                    border-radius: 5px;
+                    text-align: center;
+                `;
+                emojiSpan.addEventListener('mouseover', () => {
+                    emojiSpan.style.background = '#f0f0f0';
+                });
+                emojiSpan.addEventListener('mouseout', () => {
+                    emojiSpan.style.background = 'transparent';
+                });
+                emojiSpan.addEventListener('click', () => {
+                    messageInput.value += emoji;
+                    messageInput.focus();
+                    document.body.removeChild(emojiPicker);
+                });
+                emojiPicker.appendChild(emojiSpan);
+            });
+            
+            // Hapus picker sebelumnya jika ada
+            const existingPicker = document.querySelector('.emoji-picker');
+            if (existingPicker) document.body.removeChild(existingPicker);
+            
+            emojiPicker.classList.add('emoji-picker');
+            document.body.appendChild(emojiPicker);
+            
+            // Hapus saat klik di luar
+            setTimeout(() => {
+                document.addEventListener('click', function removePicker(e) {
+                    if (!emojiPicker.contains(e.target) && e.target !== emojiBtn) {
+                        document.body.removeChild(emojiPicker);
+                        document.removeEventListener('click', removePicker);
+                    }
+                });
+            }, 10);
+        });
+        
+        // Auto-refresh chat setiap 3 detik untuk melihat pesan baru dari tab lain
+        setInterval(() => {
+            if (currentUser) {
+                loadMessages();
+                cleanupInactiveUsers();
+            }
+        }, 3000);
+        
+        // Login dengan Enter juga
+        passwordInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                loginBtn.click();
+            }
+        });
+        
+        customUsername.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                loginBtn.click();
+            }
+        });
+        
+        // Inisialisasi
+        initializeChat();
+        
+        // Saat tab ditutup, hapus user dari aktif
+        window.addEventListener('beforeunload', function() {
+            if (currentUser) {
+                const userActivities = JSON.parse(localStorage.getItem('lineboxUserActivities')) || {};
+                delete userActivities[currentUser];
+                localStorage.setItem('lineboxUserActivities', JSON.stringify(userActivities));
+            }
+        });
+        
+        // Cek apakah ada user yang login sebelumnya
+        window.addEventListener('load', function() {
+            // Cek user activities untuk status aktif
+            cleanupInactiveUsers();
+        });
+    </script>
+</body>
+</html>
